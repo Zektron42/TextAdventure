@@ -134,7 +134,7 @@ class player():
             if 'money' in self.inventory.keys():
                 sItem = random.choice(itemChoices)
                 while sItem == 'money':
-                    sItem = randomchoice(itemChoices)
+                    sItem = random.choice(itemChoices)
                 tradeYN = input('He says "Would you like to trade one of your money for one of my {i}?"(y/n)'.format(i=sItem))
                 if tradeYN == 'y':
                     print('"That\'s great! Here you go"')
