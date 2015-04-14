@@ -36,31 +36,16 @@ class player():
                           'west':random.choice(roomChoices)}
         self.direction[random.choice(['north','south','east','west'])] = 'door'
     def makeRoom(self, iDirect):
-        if iDirect == 'south':
-            self.direction = {'north':'door',
-                              'south':random.choice(roomChoices),
-                              'east':random.choice(roomChoices),
-                              'west':random.choice(roomChoices)}
-        elif iDirect == 'north':
-            self.direction = {'north':random.choice(roomChoices),
-                              'south':'door',
-                              'east':random.choice(roomChoices),
-                              'west':random.choice(roomChoices)}
-        elif iDirect == 'west':
-            self.direction = {'north':random.choice(roomChoices),
-                              'south':random.choice(roomChoices),
-                              'east':'door',
-                              'west':random.choice(roomChoices)}
-        elif iDirect == 'east':
-            self.direction = {'north':random.choice(roomChoices),
-                              'south':random.choice(roomChoices),
-                              'east':random.choice(roomChoices),
-                              'west':'door'}
+        self.direction['north'] = random.choice(roomChoices)
+        self.direction['south'] = random.choice(roomChoices)
+        self.direction['west'] = random.choice(roomChoices)
+        self.direction['east'] = random.choice(roomChoices)
+        self.direction[random.choice(['north','south','east','west'])] = 'door'
     def eat(self):
         while True:
             try:
                 amount = int(input('How much food do you want to eat?(num 1-{n})'.format(n=self.inventory['food'])))
-                self.hunger += 5*amount + amount
+                self.hunger += 7*amount
                 self.inventory['food'] -= amount
                 if self.health + 10*amount < self.maxHealth:
                     self.health += 10*amount
@@ -71,11 +56,11 @@ class player():
                 print('Use integer value')
             if self.inventory['food'] < 0:
                 self.inventory['food'] += amount
-                self.hunger -= 5*amount + amount
+                self.hunger -= 7*amount
                 self.health -= 10*amount
                 print('You don\'t have that much food')
             else:
-                print('You gained {hg} hunger, and you gained {hp} HP'.format(hg=5*amount + amount, hp=10*amount))
+                print('You gained {hg} hunger, and you gained {hp} HP'.format(hg=7*amount, hp=10*amount))
                 break
     def look(self, iDirect):
         if iDirect == 'inventory' and self.inventory == {}:
@@ -101,12 +86,14 @@ class player():
                 self.inventory[chestTemp] = 1
             if chestTemp == 'torch' and 'look_around' not in keywords:
                 keywords.append('look_around')
+                itemChoices.remove('torch')
             elif chestTemp == 'weapon':
                 if self.inventory['weapon'] > 5:
                     print('Your weapon is already MAX level')
                     self.inventory['weapon'] -= 1
                 elif self.inventory['weapon'] > 4:
                     print('Your weapon is now MAX level')
+                    itemChoices.remove('weapon')
             print('\nYou opened the chest and found {ct} inside'.format(ct=chestTemp))
         elif self.direction[iDirect] == 'opened chest':
             print('\nChest already opened')
@@ -146,6 +133,8 @@ class player():
         elif self.direction[iDirect] == 'friendly stranger':
             if 'money' in self.inventory.keys():
                 sItem = random.choice(itemChoices)
+                while sItem == 'money':
+                    sItem = randomchoice(itemChoices)
                 tradeYN = input('He says "Would you like to trade one of your money for one of my {i}?"(y/n)'.format(i=sItem))
                 if tradeYN == 'y':
                     print('"That\'s great! Here you go"')
@@ -156,12 +145,14 @@ class player():
                         self.inventory[sItem] = 1
                     if sItem == 'torch' and 'look_around' not in keywords:
                         keywords.append('look_around')
+                        itemChoices.remove('torch')
                     elif sItem == 'weapon':
                         if self.inventory['weapon'] > 5:
                             print('Your weapon is already MAX level')
                             self.inventory['weapon'] -= 1
                         elif self.inventory['weapon'] > 4:
                             print('Your weapon is now MAX level')
+                            itemChoices.remove('weapon')
                 else:
                     print('"Oh... That\'s OK... I didn\'t need money for my kids or anything... come by later?"')
             elif 'food' in self.inventory.keys():
@@ -189,6 +180,7 @@ class player():
                 self.exp += 10
                 if eItem == 'torch' and 'look_around' not in keywords:
                     keywords.append('look_around')
+                    itemChoices.remove('torch')
                 try:
                     self.inventory[eItem] += 1
                 except KeyError:
@@ -199,6 +191,7 @@ class player():
                         self.inventory['weapon'] -= 1
                     elif self.inventory['weapon'] > 4:
                         print('Your weapon is now MAX level')
+                        itemChoices.remove('weapon')
             else:
                 if 'armor' in self.inventory.keys():
                     print('You made it out safe but your armor was damaged')
