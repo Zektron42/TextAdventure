@@ -3,7 +3,7 @@ import sys
 import random
 import readline
 
-keywords = ['look_north', 'look_south', 'look_east', 'look_west', 'look_inventory', 'move_north', 'move_south', 'move_east', 'move_west', 'eat', 'quit']
+kwbackup = keywords = ['look_north', 'look_south', 'look_east', 'look_west', 'look_inventory', 'move_north', 'move_south', 'move_east', 'move_west', 'eat', 'quit']
 roomChoices = ['monster', 'door', 'chest', 'wall', 'friendly stranger', 'enemy']
 followerChoices = ['John', 'James', 'Kevin', 'Carl', 'Steve', 'Brian', 'Jack', 'Tom', 'Sean', 'Jim', 'Bill', 'Bob', 'Terry', 'Iisac', 'Ben']
 itemChoices = ['torch', 'money', 'food', 'weapon', 'armor']
@@ -27,7 +27,7 @@ class player():
         self.followers = []
         self.health = 100
         self.maxHealth = 100
-        self.hunger = 31
+        self.hunger = 30
         self.exp = 0
         self.level = 0
         self.direction = {'north':random.choice(roomChoices),
@@ -45,7 +45,7 @@ class player():
         while True:
             try:
                 amount = int(input('How much food do you want to eat?(num 1-{n})'.format(n=self.inventory['food'])))
-                self.hunger += 7*amount
+                self.hunger += 4*amount
                 self.inventory['food'] -= amount
                 if self.health + 10*amount < self.maxHealth:
                     self.health += 10*amount
@@ -56,11 +56,11 @@ class player():
                 print('Use integer value')
             if self.inventory['food'] < 0:
                 self.inventory['food'] += amount
-                self.hunger -= 7*amount
+                self.hunger -= 4*amount
                 self.health -= 10*amount
                 print('You don\'t have that much food')
             else:
-                print('You gained {hg} hunger, and you gained {hp} HP'.format(hg=7*amount, hp=10*amount))
+                print('You gained {hg} hunger, and you gained {hp} HP'.format(hg=4*amount, hp=10*amount))
                 break
     def look(self, iDirect):
         if iDirect == 'inventory' and self.inventory == {}:
@@ -74,6 +74,7 @@ class player():
         else:
             return self.direction[iDirect]
     def move(self, iDirect):
+        self.hunger -= 1
         if self.direction[iDirect] == 'door':
             self.makeRoom(iDirect)
             print('\nYou walked through the door')
@@ -131,7 +132,34 @@ class player():
                 else:
                     pass
         elif self.direction[iDirect] == 'friendly stranger':
-            if 'money' in self.inventory.keys():
+            if 'money' in self.inventory.keys() and 'food' in self.inventory.keys() and self.inventory['food'] >= 5:
+                sItem = random.choice(itemChoices)
+                while sItem == 'money':
+                    sItem = random.choice(itemChoices)
+                tradeYN = input('He says "For 5 food I\'ll follow you. Or you can trade one of your money for my {i}."(f/y/n)'.format(i=sItem))
+                if tradeYN == 'f':
+                    self.inventory['food'] -= 5
+                    self.followers.append(random.choice(followerChoices))
+                elif tradeYN == 'y':
+                    print('"That\'s great! Here you go"')
+                    self.inventory['money'] -= 1
+                    try:
+                        self.inventory[sItem] += 1
+                    except KeyError:
+                        self.inventory[sItem] = 1
+                    if sItem == 'torch' and 'look_around' not in keywords:
+                        keywords.append('look_around')
+                        itemChoices.remove('torch')
+                    elif sItem == 'weapon':
+                        if self.inventory['weapon'] > 5:
+                            print('Your weapon is already MAX level')
+                            self.inventory['weapon'] -= 1
+                        elif self.inventory['weapon'] > 4:
+                            print('Your weapon is now MAX level')
+                            itemChoices.remove('weapon')
+                else:
+                    print('"Oh... That\'s OK... I didn\'t need money for my kids or anything... come by later?"')
+            elif 'money' in self.inventory.keys():
                 sItem = random.choice(itemChoices)
                 while sItem == 'money':
                     sItem = random.choice(itemChoices)
@@ -154,10 +182,10 @@ class player():
                             print('Your weapon is now MAX level')
                             itemChoices.remove('weapon')
                 else:
-                    print('"Oh... That\'s OK... I didn\'t need money for my kids or anything... come by later?"')
-            elif 'food' in self.inventory.keys():
+                    print('"Stop by sometime later; I might have something new!"')
+            elif 'food' in self.inventory.keys() and self.inventory['food'] >= 5:
                 folYN = input('He says "for five food I\ll join your party(y/n)" ')
-                if folYN == 'y' and self.inventory['food'] > 4:
+                if folYN == 'y':
                     self.inventory['food'] -= 5
                     self.followers.append(random.choice(followerChoices))
             else:
@@ -212,8 +240,9 @@ class player():
             system('cls')
     def cheat(*args):
         pass
-    def noAction(*args):
+    def noAction(self):
         print('That is not a valid action')
+        self.hunger -= 1
 
 inp = ''
 nPlayer = player()
@@ -272,7 +301,9 @@ while True:
     elif 0 == len(nPlayer.followers):
         if 'look_followers' in keywords:
             keywords.remove('look_followers')
-    if nPlayer.exp >= 100:
+    if nPlayer.level == 5:
+        keywords.append('boss room')
+    elif nPlayer.exp >= 50 + (nPlayer.level * 10):
         nPlayer.exp -= 100
         nPlayer.maxHealth += 10
         nPlayer.health = nPlayer.maxHealth
@@ -280,8 +311,6 @@ while True:
     if nPlayer.hunger == 0:
         print('You died of hunger')
         sys.exit()
-    else:
-        nPlayer.hunger -= 1
     inp = in2()
     if eval('nPlayer.'+inp):
         print('\n'+eval('nPlayer.'+inp))
