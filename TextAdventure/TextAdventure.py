@@ -259,23 +259,29 @@ def in2():
     kw1 = ''
     system('cls')
     if kw == 'cheat':
+        keywords = ['inventory', 'room', 'command']
         cChoice = input('inventory, room, or command? ')
         if cChoice == 'inventory':
+            keywords = itemChoices
             iAdd = input('what do you want to add?')
             try:
                 nPlayer.inventory[iAdd] += 1
             except KeyError:
                 nPlayer.inventory[iAdd] = 1
         elif cChoice == 'room':
+            keywords = ['north', 'south', 'east', 'west']
             rChoice = input('Which direction?(north={n}, east={e}, south={s}, west={w})'.format(n=nPlayer.direction['north'], 
                                                                                                 e=nPlayer.direction['east'], 
                                                                                                 s=nPlayer.direction['south'], 
                                                                                                 w=nPlayer.direction['west']))
+            keywords = roomChoices
             nChoice = input('What do you want to change it to? ')
             nPlayer.direction[rChoice] = nChoice
         elif cChoice == 'command':
+            keywords = ['eat', 'look_around', 'look_followers']
             comChoice = input('what command do you want to add? ')
             keywords.append(comChoice)
+        keywords = kwbackup
         return 'cheat()'
     elif kw in keywords and kw != 'quit' and kw != 'eat':
         kw, kw1 = kw.split('_')
