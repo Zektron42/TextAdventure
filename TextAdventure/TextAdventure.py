@@ -42,26 +42,36 @@ class player():
         self.direction['east'] = random.choice(roomChoices)
         self.direction[random.choice(['north','south','east','west'])] = 'door'
     def eat(self):
+        if self.inventory.get('food', 0) == 0:
+            print('You do not have any food.')
+            return
+
         while True:
             try:
-                amount = int(input('How much food do you want to eat?(num 1-{n})'.format(n=self.inventory['food'])))
-                self.hunger += 4*amount
-                self.inventory['food'] -= amount
-                if self.health + 10*amount < self.maxHealth:
-                    self.health += 10*amount
-                elif self.health + 10*amount >= self.maxHealth:
-                    self.health = self.maxHealth
-
+                amount = int(input('How much food do you want to eat?(num 0-{n})'.format(n=self.inventory['food'])))
             except ValueError:
                 print('Use integer value')
-            if self.inventory['food'] < 0:
-                self.inventory['food'] += amount
-                self.hunger -= 4*amount
-                self.health -= 10*amount
+
+            if amount < 0:
+                print('Enter a positive amount.')
+
+            if amount == 0:
+                return
+
+            if amount > self.inventory['food']:
                 print('You don\'t have that much food')
-            else:
-                print('You gained {hg} hunger, and you gained {hp} HP'.format(hg=4*amount, hp=10*amount))
-                break
+                return
+            break
+
+        self.hunger += 4*amount
+        self.inventory['food'] -= amount
+        self.health += 10*amount
+
+        if self.health > self.maxHealth:
+            self.health = self.maxHealth
+
+        print('You gained {hg} hunger, and you gained {hp} HP'.format(hg=4*amount, hp=10*amount))
+
     def look(self, iDirect):
         if iDirect == 'inventory' and self.inventory == {}:
             print('You have nothing in your inventory')
@@ -270,9 +280,9 @@ def in2():
                 nPlayer.inventory[iAdd] = 1
         elif cChoice == 'room':
             keywords = ['north', 'south', 'east', 'west']
-            rChoice = input('Which direction?(north={n}, east={e}, south={s}, west={w})'.format(n=nPlayer.direction['north'], 
-                                                                                                e=nPlayer.direction['east'], 
-                                                                                                s=nPlayer.direction['south'], 
+            rChoice = input('Which direction?(north={n}, east={e}, south={s}, west={w})'.format(n=nPlayer.direction['north'],
+                                                                                                e=nPlayer.direction['east'],
+                                                                                                s=nPlayer.direction['south'],
                                                                                                 w=nPlayer.direction['west']))
             keywords = roomChoices
             nChoice = input('What do you want to change it to? ')
